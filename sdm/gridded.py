@@ -12,8 +12,6 @@ from scipy.io import netcdf
 
 from .cod import CoD
 
-logger = logging.getLogger('gridded')
-
 _Data2DBase = namedtuple('_Data2DBase', 'data, dates, gpnames')
 _Data3DBase = namedtuple('_Data3DBase', 'data, dates, lat, lon')
 
@@ -139,7 +137,7 @@ class Data3D(_Data3DBase):
 class Data2DReader(object):
 
     def read(self, file_path):
-        logger.info('Reading {}'.format(file_path))
+        logging.debug('Reading {}'.format(file_path))
 
         ncd_file = netcdf.netcdf_file(file_path)
         try:

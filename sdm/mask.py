@@ -5,8 +5,6 @@ import logging
 import numpy as np
 from scipy.io import netcdf
 
-logger = logging.getLogger('mask')
-
 MaskBase = namedtuple('MaskBase', 'data, lat, lon')
 
 
@@ -70,7 +68,7 @@ class MaskReader(object):
 
     def read(self, region_name):
         file_path = os.path.join(self.base_dir, 'mask_%s.nc' % region_name)
-        logging.info('reading mask file: {}'.format(file_path))
+        logging.debug('reading mask file: {}'.format(file_path))
         ncd_file = netcdf.netcdf_file(file_path)
 
         try:

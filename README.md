@@ -73,14 +73,14 @@ installation on raijin.
 ## Possible Issues
 There maybe some memory issue on running the DXT tool as it requires large
 memory to extract data for large regions (e.g. `nmr`, `qld`). Data
-post-processings like inflation could be even more memory intensive. The tool
+post-processing like inflation could be even more memory intensive. The tool
 will only guarantee to work with smaller regions as memory issue is more
 hardware and operating system related and cannot be easily solved in the code
 itself.
 
 
 ## Usage
-The functionalities of the tool is packaged as a Python module called `sdm`. An
+The functionality of the tool is packaged as a Python module called `sdm`. An
 command line Python script, `sdmrun.py` is developed to interface with the
 module. The general form to use`sdmrun.py` is shown as follows:
 ```Bash
@@ -118,14 +118,22 @@ There are currently three sub-commands and they are described as follows:
     Generates the reconstructed climate series using the given CoD filename. The
     output NetCDF must be specified in order to save the data, e.g.:
     ```Bash
-    python sdmrun.py dxt-gridded out.nc /path/to/a/CoD/File out.nc
+    python sdmrun.py dxt-gridded /path/to/a/CoD/File out.nc
     ```
 
 * `dxt-gridded2`
     Similar to above sub-command, but takes parameters that generates a 
     file path to the CoD file instead of the CoD filename directly, e.g:
     ```Bash
-    python sdmrun.py dxt-gridded2 out.nc -m ACCESS1.0 -c historical -r tas -s 2 -p rain out.nc
+    python sdmrun.py dxt-gridded2 -m ACCESS1.0 -c historical -r tas -s 2 -p rain out.nc
+    ```
+
+* `to-3d`
+    Convert 2D data from a downscaling output NetCDF file to 3D and save in a new NetCDF file.
+    The 2D data is of format `[dates, points]` and the 3D data is of format `[time, lat, lon]`.
+    The new NetCDF file is CF-compliant.
+    ```Bash
+    python sdmrun.py to-3d /path/to/a/downscaling/output/netcdf/file region_mask_name out.nc
     ```
 
 

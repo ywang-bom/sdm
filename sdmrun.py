@@ -15,8 +15,6 @@ from sdm.extractor import GriddedExtractor
 from sdm.parameters import MainParameters
 from sdm.mask import MaskReader
 
-logging.basicConfig(level=logging.WARNING)
-
 
 def read_config(config_file):
     if not config_file:
@@ -48,6 +46,17 @@ def main(args):
     ap.add_argument('-V', '--version',
                     action='version',
                     version='%s: v%s' % (ap.prog, __version__))
+    ap.add_argument('--debug',
+                    action='store_true',
+                    default=False,
+                    help='print debug messages')
+    # Overriding config options
+    ap.add_argument('--dxt-cod_base_dir',
+                    help='override cod_base_dir option of the dxt section')
+    ap.add_argument('--dxt-mask_base_dir',
+                    help='override mask_base_dir option of the dxt section')
+    ap.add_argument('--dxt_gridded_base_dir',
+                    help='override gridded_base_dir option of the dxt section')
 
     subparsers = ap.add_subparsers(dest='sub_command',
                                    title='List of sub-commands',
@@ -106,17 +115,31 @@ def main(args):
                                      required=False,
                                      help='the region where the data are to be extracted (default to region-type)')
 
-
     to_3d_parser = subparsers.add_parser('to-3d',
                                          help='Convert and save the 2D (dates, gpnames) file to 3D (dates, lat, lon)')
     to_3d_parser.add_argument('data2d_file',
-                              help='The input file containing the 2D data')
+                              help='the input file containing the 2D data')
     to_3d_parser.add_argument('data3d_file',
-                              help='The output file')
+                              help='the output file')
+    to_3d_parser.add_argument('-R', '--region',
+                              help='the region of the downscaled data')
 
     ns = ap.parse_args(args)
 
+    if ns.debug:
+        logging.basicConfig(format='%(asctime)s %(levelname)s [%(funcName)s] - %(message)s',
+                            level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.WARNING)
+
     config = read_config(ns.config_file)
+    # Process any overriding
+    if ns.dxt_cod_base_dir:
+        config.set('dxt', 'cod_base_dir', ns.dxt_cod_base_dir)
+    if ns.dxt_mask_base_dir:
+        config.set('dxt', 'mask_base_dir', ns.dxt_mask_base_dir)
+    if ns.dxt_gridded_base_dir:
+        config.set('dxt', 'gridded_base_dir', ns.dxt_gridded_base_dir)
 
     if ns.sub_command == 'cod-getpath':
         main_parameters = MainParameters(ns.model, ns.scenario, ns.region_type, ns.season, ns.predictand)
@@ -140,12 +163,13 @@ def main(args):
         main_parameters = MainParameters.from_filepath(ns.data2d_file)
         data2d = Data2DReader().read(ns.data2d_file)
         mask_reader = MaskReader(base_dir=config.get('dxt', 'mask_base_dir'))
-        mask = mask_reader.read(main_parameters.region_type)
+        mask = mask_reader.read(ns.region if ns.region else main_parameters.region_type)
         data3d = data2d.to_3d(mask.crop())
 
         data3d.save_nc(ns.data3d_file, main_parameters=main_parameters)
 
-
+    else:
+        sys.stderr.write('Unknown sub-command: {}'.format(ns.sub_command))
 
 
 if __name__ == '__main__':

@@ -1,6 +1,8 @@
 import os
 from collections import namedtuple
 
+from .helper import decompose_filepath
+
 _MAIN_PARAMETER_MEMBERS = 'model scenario region_type season predictand region'
 
 _MainParametersBase = namedtuple('_MainParametersBase', _MAIN_PARAMETER_MEMBERS)
@@ -35,20 +37,8 @@ class MainParameters(_MainParametersBase):
 
     @staticmethod
     def from_filepath(filepath):
-        s = os.path.dirname(filepath)
-        season = os.path.basename(s)
-        p = os.path.dirname(os.path.dirname(filepath))
-        predictand = os.path.basename(p)
-        p = os.path.dirname(p)
-        region_type = os.path.basename(p)
-        p = os.path.dirname(p)
-        fields = os.path.basename(p).split('_')
-        if len(fields) == 2:
-            model, scenario = fields
-        else:
-            model, scenario = fields[0], ''
-
-        return MainParameters(model, scenario, region_type, season, predictand)
+        _, params = decompose_filepath(filepath)
+        return MainParameters(*params)
 
     def get_modsce(self):
         return get_modsce(self.model, self.scenario)
